@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+
+  backend:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./server:/app
+      - ./scripts:/scripts
+    ports:
+      - '3001:3000'
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: wms123456
+      MYSQL_DB: wms
+    depends_on:
+      - db
+    command: sh -c 'npm install && node index.js'
+
+  db:
+    image: mysql:8.0
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: wms123456
+      MYSQL_DATABASE: wms
+    ports:
+      - '3306:3306'
+
+volumes:
+  db_data:
